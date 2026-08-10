@@ -1,0 +1,31 @@
+{
+  "code": "M000_00000",
+  "message": "OK",
+  "result": {
+    "total": 2,
+    "list": [
+      {
+        "id": 1,
+        "novelId": 592090,
+        "num": 1,
+        "title": "1화",
+        "createdAt": "2023-01-02T00:00:00",
+        "viewCount": 1000,
+        "likeCount": 10,
+        "commentCount": 2,
+        "free": true
+      },
+      {
+        "id": 2,
+        "novelId": 592090,
+        "num": 2,
+        "title": "2화",
+        "createdAt": "2023-01-03T00:00:00",
+        "viewCount": 900,
+        "likeCount": 8,
+        "commentCount": 1,
+        "free": false
+      }
+    ]
+  }
+}

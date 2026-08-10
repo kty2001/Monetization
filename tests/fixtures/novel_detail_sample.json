@@ -1,0 +1,22 @@
+{
+  "code": "M000_00000",
+  "message": "OK",
+  "result": {
+    "novelInfo": {
+      "id": 592090,
+      "genres": ["공포·미스테리"],
+      "title": "샘플 소설",
+      "authorName": "홍길동",
+      "free": true,
+      "viewCount": 987654,
+      "chapterCount": 120,
+      "createdAt": "2023-01-01T00:00:00",
+      "pause": false,
+      "finish": false,
+      "tags": [
+        {"id": 12, "title": "회귀"},
+        {"id": 43, "title": "복수"}
+      ]
+    }
+  }
+}

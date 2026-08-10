@@ -1,0 +1,23 @@
+<!--
+  2026-08-10 실제 mm.munpia.com 목록 페이지 응답에서 확인한 구조를 반영한 축소 샘플.
+  각 작품은 <li onclick="view_novel(ID, 'nv.free');"> 형태이고,
+  전체 페이지 수는 <span id="list_last">N</span> 에 노출된다.
+-->
+<html>
+  <body>
+    <ul class="novel-list-area" id="list_ul">
+      <li onclick="view_novel(592090, 'nv.free');" class="best novel-list-template">
+        <div class="info"><p class="title">첫 번째 작품</p></div>
+      </li>
+      <li onclick="view_novel(589442, 'nv.free');" class="best novel-list-template">
+        <div class="info"><p class="title">두 번째 작품</p></div>
+      </li>
+      <li onclick="view_novel(592090, 'nv.free');" class="best novel-list-template">
+        <div class="info"><p class="title">첫 번째 작품 (중복)</p></div>
+      </li>
+    </ul>
+    <div class="paging">
+      <em id="list_page">1</em>&nbsp;/&nbsp;<span id="list_last">42</span>
+    </div>
+  </body>
+</html>
