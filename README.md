@@ -15,8 +15,8 @@
 ## 현재 상태
 
 - 문피아 크롤러(`clawler/`, `entity/`, `repository/`) 구현 완료, `scripts/crawl_munpia.py`로 실행
-- 무료 자유연재 전체 목록(약 48,836건) 크롤링을 백그라운드로 진행 중 (중단 시 `--resume`으로 재개 가능)
-- 데이터 파이프라인(`data/processed/`), 예측 모델(`research/`, `scripts/`), 대시보드(`pages/`)는 아직 미구현
+- 무료 자유연재 전체 목록 크롤링 **완료** (48,897건) + 좋아요/선호작 통계 백필 **완료** (48,864건)
+- 다음 단계: 유료 전환작(`pl.serial`/`pl.serial_end`) 라벨 크롤러 → 데이터 파이프라인(`data/processed/`) → 예측 모델(`research/`, `scripts/`) → 대시보드(`pages/`)
 
 자세한 내용은 [크롤러](docs/03_크롤러.md), [TODO](docs/TODO.md) 참고.
 

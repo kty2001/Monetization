@@ -6,9 +6,9 @@
 - [x] 문피아 무료 연재작 목록/상세 페이지 크롤링 구현
 - [x] 조회수, 회차 수, 연재 상태 등 기본 메타데이터 수집
 - [x] 수집 결과를 `data/raw/`에 CSV로 저장
-- [~] 페이지 범위 확대(전체 목록, 약 48,836건) 크롤링 백그라운드 실행 중 — 약 55%(2026-08-11 기준) (재개 기능 포함, run_id=20260810_231806, 상세는 [크롤러](03_크롤러.md) 참고)
-- [ ] 유료 전환작(`pl.serial`/`pl.serial_end`) 라벨 데이터 크롤러 — nv.free 크롤 완료 후 실행 (설계는 [로드맵](04_로드맵.md) 참고)
-- [~] nv.free 좋아요/선호작(구독) 통계 백필(`scripts/crawl_munpia_stats.py`) 실행 중 (본 크롤과 분리, `data/raw/stats/`)
+- [x] 페이지 범위 확대(전체 목록) 크롤링 **완료** — 48,897건 (2026-08-12, run_id=20260810_231806, 상세는 [크롤러](03_크롤러.md) 참고)
+- [ ] 유료 전환작(`pl.serial`/`pl.serial_end`) 라벨 데이터 크롤러 — 다음 단계 (설계는 [로드맵](04_로드맵.md) 참고)
+- [x] nv.free 좋아요/선호작(구독) 통계 백필(`scripts/crawl_munpia_stats.py`) **완료** — 48,864건 (`data/raw/stats/`)
 
 ## 2. 데이터 파이프라인 (`data/`, `repository/`, `service/`)
 - [x] `repository/`에 `prefix` 옵션, `NovelStats` 저장 메서드 추가
@@ -21,7 +21,7 @@
 ## 3. 엔티티/모델 정의 (`entity/`)
 - [x] 작품/회차 데이터 모델(DTO) 정의 (`Novel`, `Episode`)
 - [x] 유료 전환작 통계 모델 정의 (`NovelStats`)
-- [x] `Novel`에 `like_count`/`preference_count` 추가 — ⚠️ 다음 크롤(새 run_id)부터 반영, 진행 중인 run_id=20260810_231806에는 없음
+- [x] `Novel`에 `like_count`/`preference_count` 추가 — 진행 중인 크롤을 재개하며 스키마가 중간에 바뀌어 `novels_20260810_231806.csv`가 11필드/13필드로 깨졌던 것을 발견해 복구(구 36,145행은 두 컬럼 NaN, 신규 12,752행은 값 있음). 재발 방지로 `repository/csv_writer.append_csv`에 헤더-스키마 불일치 시 예외를 던지는 가드 추가(`tests/test_csv_writer.py`)
 
 ## 4. 매출 예측 모델 (`research/`, `scripts/`)
 - [ ] `research/`에서 ML(회귀) 모델 먼저 실험 (타겟: 구매수 `target_paid_events`, 유료 전환 시 매출 프록시)
@@ -33,8 +33,9 @@
 - [ ] Streamlit 기반 예측 결과 확인용 대시보드 구현 (`st.navigation` 3페이지: 개요/예측결과/모델성능)
 
 ## 6. 테스트 (`tests/`)
-- [x] 크롤러 핵심 로직 테스트 (`entity`, `repository`, `clawler`) — 39개 통과
+- [x] 크롤러 핵심 로직 테스트 (`entity`, `repository`, `clawler`) — 41개 통과
 - [x] 데이터 품질 검증 (`service/data_quality.py`, `scripts/validate_raw_data.py`)
+- [x] CSV append 스키마 가드 테스트 (`tests/test_csv_writer.py`)
 - [ ] 파이프라인(`service/`)·모델링 테스트 작성
 
 상세 설계는 [로드맵](04_로드맵.md) 참고.
