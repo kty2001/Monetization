@@ -51,6 +51,11 @@ def parse_args() -> argparse.Namespace:
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="output-dir에서 가장 최근 체크포인트를 찾아 이어서 크롤링",
+    )
     return parser.parse_args()
 
 
@@ -70,6 +75,7 @@ def main() -> None:
         max_pages=args.max_pages,
         novel_limit=args.novel_limit,
         out_dir=args.output_dir,
+        resume=args.resume,
     )
 
     print(f"run_id={summary.run_id}")

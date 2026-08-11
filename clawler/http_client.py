@@ -66,13 +66,9 @@ class MunpiaHttpClient:
         finally:
             time.sleep(self.config.request_delay_seconds)
 
-    def get_html(self, path: str) -> str:
+    def get_list_json(self, path: str) -> dict:
         url = f"{self.config.list_base_url}{path}"
-        response = self._send(url, path)
-        # 문피아 페이지는 UTF-8이지만 Content-Type 헤더에 charset이 없어
-        # requests가 기본값(ISO-8859-1)으로 오인식한다. 메타 태그 기준으로 강제 지정.
-        response.encoding = "utf-8"
-        return response.text
+        return self._send(url, path).json()
 
     def get_json(self, path: str, params: dict | None = None) -> dict:
         url = f"{self.config.api_base_url}{path}"

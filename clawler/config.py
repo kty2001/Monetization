@@ -20,8 +20,11 @@ FORBIDDEN_PATH_PREFIXES: tuple[str, ...] = ("/novel/viewer/", "/app_api/")
 @dataclass(frozen=True)
 class CrawlConfig:
     list_base_url: str = "https://mm.munpia.com"
-    # TODO: 실제 페이지 파라미터를 라이브 HTML에서 확인 후 필요시 수정
-    list_path_template: str = "/?menu=novel&action=list&section=nv.free&page={page}"
+    # 목록 페이지는 순수 GET(page=N)으로는 항상 1페이지와 동일한 내용을 반환한다.
+    # 실제 페이지네이션은 JS의 view_list()가 호출하는 ajx=1 AJAX(JSON) 엔드포인트를 통해서만 동작한다.
+    # section: nv.free(무료 자유연재, 기본값) / pl.serial(선연재 유료) / pl.serial_end(완결 유료) 등
+    section: str = "nv.free"
+    list_path_template: str = "/?ajx=1&menu=novel&action=list&section={section}&keyword=&page={page}"
 
     api_base_url: str = "https://www.munpia.com"
     novel_detail_path_template: str = "/api/v1/pc/novel-detail/{novel_id}"
@@ -36,6 +39,7 @@ class CrawlConfig:
             "User-Agent": os.environ.get("MUNPIA_USER_AGENT", DEFAULT_USER_AGENT),
             "Accept": "application/json, text/plain, */*",
             "Origin": "https://www.munpia.com",
+            "X-Requested-With": "XMLHttpRequest",
         }
     )
 

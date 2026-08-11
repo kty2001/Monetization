@@ -1,0 +1,12 @@
+{
+  "menu": "novel",
+  "section": "nv.free",
+  "page": 1,
+  "last": 42,
+  "count": 831,
+  "list": [
+    {"nvSrl": 592090, "nvTitle": "첫 번째 작품"},
+    {"nvSrl": 589442, "nvTitle": "두 번째 작품"},
+    {"nvSrl": 592090, "nvTitle": "첫 번째 작품 (중복)"}
+  ]
+}

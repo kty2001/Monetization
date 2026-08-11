@@ -14,7 +14,11 @@
 
 ## 현재 상태
 
-초기 구조 세팅 단계. 크롤러, 데이터 파이프라인, 예측 모델은 아직 구현되어 있지 않다.
+- 문피아 크롤러(`clawler/`, `entity/`, `repository/`) 구현 완료, `scripts/crawl_munpia.py`로 실행
+- 무료 자유연재 전체 목록(약 48,836건) 크롤링을 백그라운드로 진행 중 (중단 시 `--resume`으로 재개 가능)
+- 데이터 파이프라인(`data/processed/`), 예측 모델(`research/`, `scripts/`), 대시보드(`pages/`)는 아직 미구현
+
+자세한 내용은 [크롤러](docs/03_크롤러.md), [TODO](docs/TODO.md) 참고.
 
 ## 디렉토리 구조
 
@@ -37,8 +41,8 @@ nonfree/
 
 ## 다음 단계
 
-1. 문피아 크롤러 구현 (`clawler/`)
-2. 수집 데이터 `data/raw/`에 CSV로 적재
+1. ~~문피아 크롤러 구현 (`clawler/`)~~ ✅
+2. ~~수집 데이터 `data/raw/`에 CSV로 적재~~ ✅ (전체 목록 크롤링 진행 중)
 3. 피처 엔지니어링 (`data/processed/`, `service/`)
 4. 매출 예측 모델 학습 (`research/`, `scripts/`)
 5. 결과 확인용 대시보드 (`pages/`)
@@ -47,3 +51,6 @@ nonfree/
 
 - [환경설정](docs/01_환경설정.md)
 - [프로젝트 개요](docs/02_프로젝트개요.md)
+- [크롤러](docs/03_크롤러.md)
+- [로드맵](docs/04_로드맵.md)
+- [TODO](docs/TODO.md)
