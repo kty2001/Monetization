@@ -25,6 +25,8 @@ def test_novel_from_api_response_maps_known_fields():
     assert novel.tags == "회귀,복수"
     assert novel.chapter_count == 120
     assert novel.total_view_count == 987654
+    assert novel.like_count == 321
+    assert novel.preference_count == 456
     assert novel.serialization_status == "연재중"
     assert novel.run_id == RUN_ID
 
@@ -52,6 +54,8 @@ def test_novel_from_api_response_handles_missing_fields():
     assert novel.title is None
     assert novel.genres == ""
     assert novel.chapter_count is None
+    assert novel.like_count is None
+    assert novel.preference_count is None
     assert novel.serialization_status is None
 
 

@@ -27,6 +27,8 @@ class Novel:
     tags: str
     chapter_count: int | None
     total_view_count: int | None
+    like_count: int | None
+    preference_count: int | None
     serialization_status: str | None
     created_at: str | None
     crawled_at: str
@@ -44,6 +46,8 @@ class Novel:
             tags=_join_list(_first(data, ("tags",))),
             chapter_count=_first(data, ("chapterCount", "chapter_count", "episodeCount")),
             total_view_count=_first(data, ("viewCount", "view_count", "totalViewCount")),
+            like_count=_first(data, ("likeCount", "like_count")),
+            preference_count=_first(data, ("preferenceCount", "preference_count")),
             serialization_status=_first(data, ("status", "serializationStatus")) or _derive_status(data),
             created_at=_first(data, ("createdAt", "created_at", "firstPublishedAt")),
             crawled_at=crawled_at.isoformat(),

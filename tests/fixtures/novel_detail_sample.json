@@ -9,6 +9,8 @@
       "authorName": "홍길동",
       "free": true,
       "viewCount": 987654,
+      "likeCount": 321,
+      "preferenceCount": 456,
       "chapterCount": 120,
       "createdAt": "2023-01-01T00:00:00",
       "pause": false,

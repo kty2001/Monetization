@@ -8,6 +8,7 @@
 - [x] 수집 결과를 `data/raw/`에 CSV로 저장
 - [~] 페이지 범위 확대(전체 목록, 약 48,836건) 크롤링 백그라운드 실행 중 — 약 55%(2026-08-11 기준) (재개 기능 포함, run_id=20260810_231806, 상세는 [크롤러](03_크롤러.md) 참고)
 - [ ] 유료 전환작(`pl.serial`/`pl.serial_end`) 라벨 데이터 크롤러 — nv.free 크롤 완료 후 실행 (설계는 [로드맵](04_로드맵.md) 참고)
+- [~] nv.free 좋아요/선호작(구독) 통계 백필(`scripts/crawl_munpia_stats.py`) 실행 중 (본 크롤과 분리, `data/raw/stats/`)
 
 ## 2. 데이터 파이프라인 (`data/`, `repository/`, `service/`)
 - [x] `repository/`에 `prefix` 옵션, `NovelStats` 저장 메서드 추가
@@ -20,6 +21,7 @@
 ## 3. 엔티티/모델 정의 (`entity/`)
 - [x] 작품/회차 데이터 모델(DTO) 정의 (`Novel`, `Episode`)
 - [x] 유료 전환작 통계 모델 정의 (`NovelStats`)
+- [x] `Novel`에 `like_count`/`preference_count` 추가 — ⚠️ 다음 크롤(새 run_id)부터 반영, 진행 중인 run_id=20260810_231806에는 없음
 
 ## 4. 매출 예측 모델 (`research/`, `scripts/`)
 - [ ] `research/`에서 ML(회귀) 모델 먼저 실험 (타겟: 구매수 `target_paid_events`, 유료 전환 시 매출 프록시)
