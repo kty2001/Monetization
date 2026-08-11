@@ -53,4 +53,5 @@ nonfree/
 - [프로젝트 개요](docs/02_프로젝트개요.md)
 - [크롤러](docs/03_크롤러.md)
 - [로드맵](docs/04_로드맵.md)
+- [데이터 사전](docs/05_데이터사전.md)
 - [TODO](docs/TODO.md)

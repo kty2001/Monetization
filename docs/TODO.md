@@ -31,7 +31,8 @@
 - [ ] Streamlit 기반 예측 결과 확인용 대시보드 구현 (`st.navigation` 3페이지: 개요/예측결과/모델성능)
 
 ## 6. 테스트 (`tests/`)
-- [x] 크롤러 핵심 로직 테스트 (`entity`, `repository`, `clawler`) — 28개 통과
+- [x] 크롤러 핵심 로직 테스트 (`entity`, `repository`, `clawler`) — 39개 통과
+- [x] 데이터 품질 검증 (`service/data_quality.py`, `scripts/validate_raw_data.py`)
 - [ ] 파이프라인(`service/`)·모델링 테스트 작성
 
 상세 설계는 [로드맵](04_로드맵.md) 참고.
@@ -41,3 +42,4 @@
 - [환경설정](01_환경설정.md)
 - [크롤러](03_크롤러.md)
 - [로드맵](04_로드맵.md)
+- [데이터 사전](05_데이터사전.md)
