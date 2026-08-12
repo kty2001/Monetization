@@ -8,8 +8,23 @@ import pandas as pd
 
 Level = Literal["error", "warning"]
 
-NOVEL_NON_NEGATIVE_COLUMNS = ["chapter_count", "total_view_count"]
+NOVEL_NON_NEGATIVE_COLUMNS = [
+    "chapter_count",
+    "total_view_count",
+    "like_count",
+    "preference_count",
+]
 EPISODE_NON_NEGATIVE_COLUMNS = ["view_count", "like_count", "comment_count", "order_index"]
+STATS_NON_NEGATIVE_COLUMNS = [
+    "entry_count",
+    "comment_count",
+    "purchased_count",
+    "rented_count",
+    "hit_count",
+    "good_count",
+    "prefer_count",
+    "char_count",
+]
 
 
 @dataclass
@@ -27,6 +42,11 @@ def find_latest_csv(base_dir: Path, name: str, prefix: str = "") -> Path | None:
         reverse=True,
     )
     return candidates[0] if candidates else None
+
+
+def run_id_from_path(path: Path, name: str, prefix: str = "") -> str:
+    """{prefix}{name}_{run_id}.csv 파일명에서 run_id를 추출한다."""
+    return path.stem[len(f"{prefix}{name}_") :]
 
 
 def check_duplicates(df: pd.DataFrame, key: str) -> ValidationIssue | None:
@@ -79,6 +99,39 @@ def check_referential_integrity(
     return None
 
 
+def check_novel_id_coverage(
+    stats_df: pd.DataFrame, novels_df: pd.DataFrame
+) -> list[ValidationIssue]:
+    """stats와 novels의 novel_id 교집합 상태를 점검한다.
+
+    목록 API는 크롤 도중에도 정렬 순서가 바뀌므로 양쪽에 소수의 누락이 생길 수
+    있다(치명적이지 않아 warning). join 시 피처를 잃는 작품 수를 파악하는 용도.
+    """
+    issues: list[ValidationIssue] = []
+    novel_ids = set(novels_df["novel_id"])
+    stats_ids = set(stats_df["novel_id"])
+
+    missing_in_novels = len(stats_ids - novel_ids)
+    if missing_in_novels:
+        issues.append(
+            ValidationIssue(
+                "warning",
+                "novel_stats의 novel_id 중 novels에 없는 값이 있습니다",
+                missing_in_novels,
+            )
+        )
+    missing_in_stats = len(novel_ids - stats_ids)
+    if missing_in_stats:
+        issues.append(
+            ValidationIssue(
+                "warning",
+                "novels의 novel_id 중 novel_stats에 없는 값이 있습니다(join 시 통계 피처 결측)",
+                missing_in_stats,
+            )
+        )
+    return issues
+
+
 def validate_novels(df: pd.DataFrame) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     dup = check_duplicates(df, "novel_id")
@@ -102,4 +155,20 @@ def validate_episodes(
         ref = check_referential_integrity(df, novels_df)
         if ref:
             issues.append(ref)
+    return issues
+
+
+def validate_novel_stats(
+    df: pd.DataFrame, novels_df: pd.DataFrame | None = None
+) -> list[ValidationIssue]:
+    """novel_stats_{run_id}.csv 검증. 매출 예측 타겟(purchased_count)의 원천이라
+    novels/episodes와 동등하게 점검한다."""
+    issues: list[ValidationIssue] = []
+    dup = check_duplicates(df, "novel_id")
+    if dup:
+        issues.append(dup)
+    issues.extend(check_missing_rate(df, ["genre_main", "score", "purchased_count"]))
+    issues.extend(check_value_ranges(df, STATS_NON_NEGATIVE_COLUMNS))
+    if novels_df is not None:
+        issues.extend(check_novel_id_coverage(df, novels_df))
     return issues

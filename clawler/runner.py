@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 from clawler.checkpoint import CrawlCheckpoint
 from clawler.config import CrawlConfig
 from clawler.detail_crawler import fetch_novel_bundle
-from clawler.http_client import BlockedByServerError, MunpiaHttpClient
+from clawler.http_client import BlockedByServerError, ForbiddenPathError, MunpiaHttpClient
 from clawler.list_crawler import iter_list_pages
 from repository.crawl_repository import CrawlRepository
 
@@ -78,7 +78,7 @@ def run_crawl(
 
                 checkpoint.mark_done(novel_id)
                 processed_count += 1
-    except BlockedByServerError as exc:
+    except (BlockedByServerError, ForbiddenPathError) as exc:
         logger.error("Crawl aborted: %s", exc)
         summary.aborted = True
         summary.abort_reason = str(exc)

@@ -18,6 +18,10 @@ def _read_header(path: Path) -> list[str]:
 
 
 def append_csv(rows: list[dict], path: Path) -> None:
+    # 빈 리스트는 컬럼이 0개라 아래 헤더 가드에 "스키마 불일치"로 오진단된다.
+    if not rows:
+        return
+
     path.parent.mkdir(parents=True, exist_ok=True)
     file_exists = path.exists()
     df = pd.DataFrame(rows)

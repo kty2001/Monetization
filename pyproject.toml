@@ -1,7 +1,7 @@
 [project]
 name = "nonfree"
 version = "0.1.0"
-description = "Add your description here"
+description = "문피아 무료 연재작의 유료 전환 시 구매수 예측"
 requires-python = ">=3.13"
 dependencies = [
     "matplotlib>=3.11.1",

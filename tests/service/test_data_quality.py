@@ -5,10 +5,13 @@ import pandas as pd
 from service.data_quality import (
     check_duplicates,
     check_missing_rate,
+    check_novel_id_coverage,
     check_referential_integrity,
     check_value_ranges,
     find_latest_csv,
+    run_id_from_path,
     validate_episodes,
+    validate_novel_stats,
     validate_novels,
 )
 
@@ -130,3 +133,80 @@ def test_validate_episodes_combines_checks():
     issues = validate_episodes(episodes_df, novels_df=novels_df)
 
     assert any("고아" in issue.message for issue in issues)
+
+
+def test_run_id_from_path_extracts_run_id(tmp_path):
+    assert run_id_from_path(tmp_path / "novels_20260810_231806.csv", "novels") == "20260810_231806"
+    assert (
+        run_id_from_path(tmp_path / "paid_episodes_20260810_231806.csv", "episodes", prefix="paid_")
+        == "20260810_231806"
+    )
+
+
+def test_validate_novels_flags_negative_like_and_preference_counts():
+    df = pd.DataFrame(
+        {
+            "novel_id": ["1", "2"],
+            "title": ["A", "B"],
+            "author": ["가", "나"],
+            "genres": ["판타지", "무협"],
+            "chapter_count": [1, 2],
+            "total_view_count": [10, 20],
+            "like_count": [-1, 5],
+            "preference_count": [3, -2],
+        }
+    )
+
+    issues = validate_novels(df)
+
+    messages = [issue.message for issue in issues]
+    assert any("like_count" in m for m in messages)
+    assert any("preference_count" in m for m in messages)
+
+
+def test_validate_novel_stats_detects_duplicates_and_negative_counts():
+    df = pd.DataFrame(
+        {
+            "novel_id": ["1", "1"],
+            "genre_main": ["1", "2"],
+            "score": [9.5, 8.0],
+            "purchased_count": [100, -5],
+            "hit_count": [1, 2],
+        }
+    )
+
+    issues = validate_novel_stats(df)
+
+    assert any(i.level == "error" and "중복" in i.message for i in issues)
+    assert any(i.level == "error" and "purchased_count" in i.message for i in issues)
+
+
+def test_validate_novel_stats_passes_on_clean_data():
+    df = pd.DataFrame(
+        {
+            "novel_id": ["1", "2"],
+            "genre_main": ["1", "2"],
+            "score": [9.5, 8.0],
+            "purchased_count": [0, 0],
+            "hit_count": [10, 20],
+        }
+    )
+
+    assert validate_novel_stats(df) == []
+
+
+def test_check_novel_id_coverage_reports_both_directions_as_warnings():
+    stats_df = pd.DataFrame({"novel_id": ["1", "2", "3"]})
+    novels_df = pd.DataFrame({"novel_id": ["2", "3", "4", "5"]})
+
+    issues = check_novel_id_coverage(stats_df, novels_df)
+
+    assert [i.level for i in issues] == ["warning", "warning"]
+    assert issues[0].count == 1  # stats에만 있는 "1"
+    assert issues[1].count == 2  # novels에만 있는 "4", "5"
+
+
+def test_check_novel_id_coverage_returns_nothing_when_identical():
+    df = pd.DataFrame({"novel_id": ["1", "2"]})
+
+    assert check_novel_id_coverage(df, df) == []

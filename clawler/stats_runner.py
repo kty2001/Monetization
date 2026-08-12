@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from clawler.checkpoint import CrawlCheckpoint
 from clawler.config import CrawlConfig
-from clawler.http_client import BlockedByServerError, MunpiaHttpClient
+from clawler.http_client import BlockedByServerError, ForbiddenPathError, MunpiaHttpClient
 from clawler.list_crawler import iter_list_page_items
 from entity.novel_stats import NovelStats
 from repository.crawl_repository import CrawlRepository
@@ -70,7 +70,7 @@ def run_stats_crawl(
                 summary.stats_count += 1
 
                 checkpoint.mark_done(novel_id)
-    except BlockedByServerError as exc:
+    except (BlockedByServerError, ForbiddenPathError) as exc:
         logger.error("Stats crawl aborted: %s", exc)
         summary.aborted = True
         summary.abort_reason = str(exc)
