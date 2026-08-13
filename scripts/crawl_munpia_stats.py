@@ -5,7 +5,10 @@
 피한다.
 
     uv run python scripts/crawl_munpia_stats.py --max-pages 1   # 소규모 테스트
-    uv run python scripts/crawl_munpia_stats.py --delay 0.8 --resume   # 전체 실행
+    uv run python scripts/crawl_munpia_stats.py --max-pages 0 --delay 0.8   # 전체 실행
+
+⚠️ --max-pages 기본값은 1이다. 전체를 돌리려면 반드시 --max-pages 0을 붙일 것
+(빠뜨리면 조용히 1페이지=20건만 수집하고 정상 종료한다).
 """
 
 from __future__ import annotations
@@ -33,7 +36,7 @@ def parse_args() -> argparse.Namespace:
         "--max-pages",
         type=int,
         default=1,
-        help="목록 페이지 최대 크롤링 수 (기본 1, 안전을 위한 기본값)",
+        help="목록 페이지 최대 크롤링 수 (기본 1, 안전을 위한 기본값). 0이면 전체 페이지",
     )
     parser.add_argument(
         "--output-dir",
@@ -57,6 +60,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="output-dir에서 가장 최근 체크포인트를 찾아 이어서 크롤링",
     )
+    parser.add_argument(
+        "--start-page",
+        type=int,
+        default=1,
+        help="목록 시작 페이지 (기본 1). --resume 시 앞 페이지 재스캔을 건너뛰려면 지정",
+    )
     return parser.parse_args()
 
 
@@ -75,9 +84,11 @@ def main() -> None:
 
     summary = run_stats_crawl(
         config,
-        max_pages=args.max_pages,
+        # 0 = 전체 페이지(run_stats_crawl은 None을 "제한 없음"으로 해석)
+        max_pages=args.max_pages or None,
         out_dir=args.output_dir,
         resume=args.resume,
+        start_page=args.start_page,
     )
 
     print(f"run_id={summary.run_id}")

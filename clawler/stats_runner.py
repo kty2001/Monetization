@@ -31,6 +31,7 @@ def run_stats_crawl(
     max_pages: int | None,
     out_dir: Path,
     resume: bool = False,
+    start_page: int = 1,
 ) -> StatsCrawlSummary:
     """목록 API만 순회해 NovelStats(좋아요/선호작/댓글 등)를 수집한다.
 
@@ -56,7 +57,7 @@ def run_stats_crawl(
     summary = StatsCrawlSummary(run_id=run_id)
 
     try:
-        for items in iter_list_page_items(client, max_pages=max_pages):
+        for items in iter_list_page_items(client, max_pages=max_pages, start_page=start_page):
             for item in items:
                 novel_id = str(item["nvSrl"])
                 if checkpoint.is_done(novel_id):

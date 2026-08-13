@@ -131,3 +131,65 @@ def test_fetch_novel_bundle_reraises_global_failures(error):
 def test_describe_summarizes_response_without_dumping_body():
     assert _describe({"data": {}, "status": "ok"}) == "최상위 키=['data', 'status']"
     assert _describe(["a"]) == "타입=list"
+
+
+def _mixed_page(free_count: int, paid_count: int, start: int = 1) -> dict:
+    """앞쪽 free_count개는 무료, 뒤 paid_count개는 유료인 회차 페이지."""
+    items = []
+    for i in range(free_count + paid_count):
+        num = start + i
+        items.append(
+            {"id": num, "title": f"{num}화", "num": num, "free": i < free_count}
+        )
+    return {"result": {"list": items}}
+
+
+def test_free_chapters_only_stops_at_first_paid_chapter():
+    size = CrawlConfig().chapters_page_size
+    # 앞 25화 무료 + 나머지 유료로 100화를 채우고, 뒤에 페이지가 더 있는 상황
+    client = FakeClient(_detail(), [_mixed_page(25, size - 25), _chapter_page(size, start=size + 1)])
+
+    bundle = fetch_novel_bundle(client, "1", CRAWLED_AT, RUN_ID, free_chapters_only=True)
+
+    assert bundle is not None
+    _, episodes = bundle
+    assert len(episodes) == 25
+    assert {e.access_type for e in episodes} == {"FREE"}
+    # 유료를 만난 페이지에서 멈추므로 회차 페이지 요청은 1회뿐
+    assert sum(1 for call in client.calls if "/chapters" in call) == 1
+
+
+def test_free_chapters_only_false_collects_every_chapter():
+    size = CrawlConfig().chapters_page_size
+    client = FakeClient(_detail(), [_mixed_page(25, size - 25), _chapter_page(3, start=size + 1)])
+
+    bundle = fetch_novel_bundle(client, "1", CRAWLED_AT, RUN_ID)
+
+    assert bundle is not None
+    _, episodes = bundle
+    assert len(episodes) == size + 3
+    assert sum(1 for call in client.calls if "/chapters" in call) == 2
+
+
+def test_free_chapters_only_drops_trailing_free_afterword():
+    # 완결 후기가 마지막 회차에 무료로 붙은 케이스(실제 샘플에서 관측).
+    # 선행 연속 무료 구간만 남아야 피처 계산과 일치한다.
+    page = _mixed_page(25, 10)
+    page["result"]["list"][-1]["free"] = True  # 마지막 회차만 다시 무료
+
+    client = FakeClient(_detail(), [page])
+    bundle = fetch_novel_bundle(client, "1", CRAWLED_AT, RUN_ID, free_chapters_only=True)
+
+    assert bundle is not None
+    _, episodes = bundle
+    assert len(episodes) == 25
+    assert [e.episode_id for e in episodes] == [str(i) for i in range(1, 26)]
+
+
+def test_free_chapters_only_yields_no_episodes_when_first_chapter_is_paid():
+    client = FakeClient(_detail(), [_mixed_page(0, 5)])
+
+    bundle = fetch_novel_bundle(client, "1", CRAWLED_AT, RUN_ID, free_chapters_only=True)
+
+    assert bundle is not None
+    assert bundle[1] == []

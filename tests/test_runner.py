@@ -9,18 +9,24 @@ from clawler.runner import run_crawl
 
 @pytest.fixture
 def fake_crawl(monkeypatch):
-    """iter_list_pages / fetch_novel_bundle / MunpiaHttpClient를 대체해
-    네트워크 없이 run_crawl의 오케스트레이션만 검증한다."""
+    """iter_list_page_items / fetch_novel_bundle / MunpiaHttpClient를 대체해
+    네트워크 없이 run_crawl의 오케스트레이션만 검증한다.
+
+    pages는 목록 API 원본 item dict의 페이지 목록이다(novel_id는 nvSrl에서 온다).
+    """
 
     def install(pages, bundles):
+        item_pages = [[{"nvSrl": novel_id, "nvSumPurchased": 100} for novel_id in page] for page in pages]
         monkeypatch.setattr(runner_module, "MunpiaHttpClient", lambda config: object())
         monkeypatch.setattr(
-            runner_module, "iter_list_pages", lambda client, max_pages=None: iter(pages)
+            runner_module,
+            "iter_list_page_items",
+            lambda client, max_pages=None, start_page=1: iter(item_pages),
         )
 
         fetched: list[str] = []
 
-        def fake_fetch(client, novel_id, crawled_at, run_id):
+        def fake_fetch(client, novel_id, crawled_at, run_id, free_chapters_only=False):
             fetched.append(novel_id)
             result = bundles[novel_id]
             if isinstance(result, Exception):
@@ -120,3 +126,56 @@ def test_run_crawl_resume_skips_already_processed(tmp_path, fake_crawl):
     novels = pd.read_csv(tmp_path / f"novels_{first.run_id}.csv")
     assert len(novels) == 2  # 같은 파일에 이어쓰기, 중복 없음
     assert sorted(novels["novel_id"]) == [1, 2]
+
+
+def test_run_crawl_prefix_writes_separate_filenames(tmp_path, fake_crawl):
+    fake_crawl([["1"]], {"1": _bundle(1)})
+
+    summary = run_crawl(
+        CrawlConfig(), max_pages=1, novel_limit=None, out_dir=tmp_path, prefix="paid_"
+    )
+
+    assert (tmp_path / f"paid_novels_{summary.run_id}.csv").exists()
+    assert (tmp_path / f"paid_episodes_{summary.run_id}.csv").exists()
+    assert not (tmp_path / f"novels_{summary.run_id}.csv").exists()
+
+
+def test_run_crawl_collect_stats_writes_target_from_list_item(tmp_path, fake_crawl):
+    fake_crawl([["1", "2"]], {"1": _bundle(1), "2": _bundle(1)})
+
+    summary = run_crawl(
+        CrawlConfig(section="pl.serial_end"),
+        max_pages=1,
+        novel_limit=None,
+        out_dir=tmp_path,
+        prefix="paid_",
+        collect_stats=True,
+    )
+
+    assert summary.stats_count == 2
+    stats = pd.read_csv(tmp_path / f"paid_novel_stats_{summary.run_id}.csv")
+    assert len(stats) == 2
+    assert list(stats["purchased_count"]) == [100, 100]
+    assert set(stats["section"]) == {"pl.serial_end"}
+
+
+def test_run_crawl_without_collect_stats_writes_no_stats_file(tmp_path, fake_crawl):
+    fake_crawl([["1"]], {"1": _bundle(1)})
+
+    summary = run_crawl(CrawlConfig(), max_pages=1, novel_limit=None, out_dir=tmp_path)
+
+    assert summary.stats_count == 0
+    assert not (tmp_path / f"novel_stats_{summary.run_id}.csv").exists()
+
+
+def test_run_crawl_collects_stats_even_when_detail_fetch_skipped(tmp_path, fake_crawl):
+    # 상세 수집 실패해도 목록 item의 타겟(구매수)은 남긴다.
+    fake_crawl([["1"]], {"1": None})
+
+    summary = run_crawl(
+        CrawlConfig(), max_pages=1, novel_limit=None, out_dir=tmp_path, collect_stats=True
+    )
+
+    assert summary.skipped_novel_ids == ["1"]
+    assert summary.novel_count == 0
+    assert summary.stats_count == 1

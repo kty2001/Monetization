@@ -25,3 +25,8 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# 데스크톱 앱 빌드 산출물 (scripts/build_app_bundle.py로 재생성)
+app/bundle/
+build/
+dist/

@@ -30,18 +30,27 @@ def parse_list_page(data: dict) -> tuple[list[str], int]:
     return novel_ids, total_pages
 
 
-def iter_list_pages(client: MunpiaHttpClient, max_pages: int | None = None) -> Iterator[list[str]]:
-    """목록 페이지를 1페이지부터 순회하며 페이지별 novel_id 목록을 yield한다."""
-    for items in iter_list_page_items(client, max_pages=max_pages):
+def iter_list_pages(
+    client: MunpiaHttpClient, max_pages: int | None = None, start_page: int = 1
+) -> Iterator[list[str]]:
+    """목록 페이지를 순회하며 페이지별 novel_id 목록을 yield한다."""
+    for items in iter_list_page_items(client, max_pages=max_pages, start_page=start_page):
         yield [str(item["nvSrl"]) for item in items]
 
 
 def iter_list_page_items(
-    client: MunpiaHttpClient, max_pages: int | None = None
+    client: MunpiaHttpClient, max_pages: int | None = None, start_page: int = 1
 ) -> Iterator[list[dict]]:
-    """목록 페이지를 1페이지부터 순회하며 페이지별 원본 item dict 목록을 yield한다."""
-    page = 1
-    total_pages = 1
+    """목록 페이지를 순회하며 페이지별 원본 item dict 목록을 yield한다.
+
+    start_page: 시작 페이지(기본 1). 재개 시 이미 처리한 구간을 다시 훑지 않기 위한
+        옵션 — 체크포인트만으로 재개하면 앞 페이지를 전부 재스캔하느라 페이지당
+        딜레이가 그대로 든다(48,000건 규모에서 20분 이상). 단, 목록 정렬이 크롤
+        도중에도 바뀌므로 건너뛴 구간으로 밀려온 작품은 놓칠 수 있다.
+    max_pages: 마지막 페이지 번호(시작 페이지 기준 개수가 아니라 절대 번호).
+    """
+    page = start_page
+    total_pages = start_page
     while page <= total_pages:
         if max_pages is not None and page > max_pages:
             break
